@@ -1,0 +1,57 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "B3-Datafactory-20may"
+		},
+		"LS_AWS_S3_secretAccessKey": {
+			"value": ""
+		},
+		"LS_AzureSqlDatabase_password": {
+			"value": ""
+		},
+		"LS_DL_accountKey": {
+			"value": ""
+		},
+		"LS_OnPremise_MySql_password": {
+			"value": ""
+		},
+		"LS_AWS_S3_properties_typeProperties_accessKeyId": {
+			"value": "AKIA36I7PG4KEWFBIVQS"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_server": {
+			"value": "sqldatabaseserverjuly.database.windows.net"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_database": {
+			"value": "azureSQLDB-CI"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_userName": {
+			"value": "adeazuresql"
+		},
+		"LS_DL_properties_typeProperties_url": {
+			"value": "https://b3datalake15may.dfs.core.windows.net/"
+		},
+		"LS_Github_properties_typeProperties_url": {
+			"value": "https://raw.githubusercontent.com/"
+		},
+		"LS_OnPremise_MySql_properties_typeProperties_server": {
+			"value": "127.0.0.1"
+		},
+		"LS_OnPremise_MySql_properties_typeProperties_database": {
+			"value": "adesql"
+		},
+		"LS_OnPremise_MySql_properties_typeProperties_username": {
+			"value": "root"
+		},
+		"TG_ProdReady_Event_properties_typeProperties_scope": {
+			"value": "/subscriptions/d763a116-bd1a-4303-a905-59c299f9af68/resourceGroups/B3-RG-CI/providers/Microsoft.Storage/storageAccounts/b3datalake15may"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
