@@ -1,0 +1,69 @@
+{
+	"name": "dataflowJoins",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_Join_orders",
+						"type": "DatasetReference"
+					},
+					"name": "sourceOrders"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_Joins_Customers",
+						"type": "DatasetReference"
+					},
+					"name": "sourceCustomers"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_Join_output",
+						"type": "DatasetReference"
+					},
+					"name": "sink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "joinInner"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Order_ID as short,",
+				"          Cust_ID as short,",
+				"          Price as short",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceOrders",
+				"source(output(",
+				"          Customer_ID as short,",
+				"          Name as string,",
+				"          Email as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceCustomers",
+				"sourceOrders, sourceCustomers join(Cust_ID == Customer_ID,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     partitionBy('hash', 1),",
+				"     broadcast: 'auto')~> joinInner",
+				"joinInner sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink"
+			]
+		}
+	}
+}
