@@ -81,6 +81,86 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DS_Join_orders')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_DL",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "orders.csv",
+						"folderPath": "table-Orders",
+						"fileSystem": "joins-container"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_Join_output')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_DL",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "tables-joined-data",
+						"fileSystem": "joins-container"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_Joins_Customers')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_DL",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "customers.csv",
+						"folderPath": "table-customers",
+						"fileSystem": "joins-container"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/DS_Oldfiles')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -882,174 +962,6 @@
 				},
 				"annotations": [],
 				"lastPublishTime": "2026-06-05T14:07:34Z"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DS_MySqlTable')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LS_OnPremise_MySql",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "MySqlTable",
-				"schema": [],
-				"typeProperties": {
-					"tableName": "`customers`"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_OnPremise_MySql')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dataflowActivites')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "ds_salesfilesOnly",
-								"type": "DatasetReference"
-							},
-							"name": "sourceSalesFiles"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ds_transformed_datafile",
-								"type": "DatasetReference"
-							},
-							"name": "sink"
-						}
-					],
-					"transformations": [
-						{
-							"name": "selectFewColumns"
-						},
-						{
-							"name": "filterCondition"
-						},
-						{
-							"name": "splitUK"
-						},
-						{
-							"name": "aggregate"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          InvoiceNo as integer,",
-						"          StockCode as integer,",
-						"          Description as string,",
-						"          Quantity as integer,",
-						"          InvoiceDate as date,",
-						"          UnitPrice as double,",
-						"          CustomerID as integer,",
-						"          Country as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     partitionBy('hash', 1)) ~> sourceSalesFiles",
-						"sourceSalesFiles select(mapColumn(",
-						"          InvoiceNo,",
-						"          Description,",
-						"          InvoiceDate,",
-						"          UnitPrice,",
-						"          CustomerID,",
-						"          Country",
-						"     ),",
-						"     partitionBy('hash', 1),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> selectFewColumns",
-						"selectFewColumns filter(InvoiceNo!=537668,",
-						"     partitionBy('hash', 1)) ~> filterCondition",
-						"filterCondition split(Country=='United Kingdom',",
-						"     Country=='Germany',",
-						"     disjoint: false,",
-						"     partitionBy('hash', 1)) ~> splitUK@(UK, Germany, others)",
-						"splitUK@UK aggregate(groupBy(InvoiceNo),",
-						"     UnitPrice = sum(UnitPrice),",
-						"     partitionBy('hash', 1)) ~> aggregate",
-						"aggregate sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sink"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ds_salesfilesOnly')]",
-				"[concat(variables('factoryId'), '/datasets/ds_transformed_datafile')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dataflowS3')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "DS_DL_txtfile",
-								"type": "DatasetReference"
-							},
-							"name": "sourceS3File"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "DS_DL_Tranform",
-								"type": "DatasetReference"
-							},
-							"name": "sinkDL"
-						}
-					],
-					"transformations": [
-						{
-							"name": "pivotData"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          CustID as short,",
-						"          Product as string,",
-						"          Sales as integer",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     partitionBy('hash', 1)) ~> sourceS3File",
-						"sourceS3File pivot(groupBy(CustID),",
-						"     pivotBy(Product),",
-						"     Total_Sales_ = sum(toInteger(Sales)),",
-						"     columnNaming: '$N$V',",
-						"     lateral: true,",
-						"     partitionBy('hash', 1)) ~> pivotData",
-						"pivotData sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> sinkDL"
-					]
-				}
 			},
 			"dependsOn": []
 		}
