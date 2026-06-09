@@ -1,0 +1,55 @@
+{
+	"name": "dataflowS3",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_DL_txtfile",
+						"type": "DatasetReference"
+					},
+					"name": "sourceS3File"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_DL_Tranform",
+						"type": "DatasetReference"
+					},
+					"name": "sinkDL"
+				}
+			],
+			"transformations": [
+				{
+					"name": "pivotData"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          CustID as short,",
+				"          Product as string,",
+				"          Sales as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> sourceS3File",
+				"sourceS3File pivot(groupBy(CustID),",
+				"     pivotBy(Product),",
+				"     Total_Sales_ = sum(toInteger(Sales)),",
+				"     columnNaming: '$N$V',",
+				"     lateral: true,",
+				"     partitionBy('hash', 1)) ~> pivotData",
+				"pivotData sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkDL"
+			]
+		}
+	}
+}

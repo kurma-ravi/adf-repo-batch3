@@ -1,0 +1,24 @@
+{
+	"name": "TG_ProdReady_Event",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "4_PL_ProdReady",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "BlobEventsTrigger",
+		"typeProperties": {
+			"blobPathBeginsWith": "/source-container/blobs/csv-files/products.csv",
+			"ignoreEmptyBlobs": true,
+			"scope": "/subscriptions/d763a116-bd1a-4303-a905-59c299f9af68/resourceGroups/B3-RG-CI/providers/Microsoft.Storage/storageAccounts/b3datalake15may",
+			"events": [
+				"Microsoft.Storage.BlobCreated"
+			]
+		}
+	}
+}

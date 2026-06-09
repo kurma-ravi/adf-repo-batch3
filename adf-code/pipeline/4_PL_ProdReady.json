@@ -1,0 +1,72 @@
+{
+	"name": "4_PL_ProdReady",
+	"properties": {
+		"activities": [
+			{
+				"name": "Execute_CopyFile",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "1_PL_CopyCSV_File",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Execute_GithubCopy",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Execute_CopyFile",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "2_PL_Github_Copy",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "ExecuteSelectedFilesOnly",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Execute_GithubCopy",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "3_PL_OnlySalesFilesCopy",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2026-06-09T13:00:37Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
